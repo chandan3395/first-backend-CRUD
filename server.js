@@ -18,6 +18,11 @@ mongoose.connect(process.env.MONGO_URI)
 const authRoutes = require("./routes/authRoutes");
 const notesRoutes = require("./routes/notesRoutes");
 
+// To check whether the API is running or not 
+app.get("/",(req,res)=>{
+    res.json({message: "API is running succesfully"}) ;
+});
+
 // route mounting
 // Any request starting with /auth will go to authRoutes file.
 app.use("/auth", authRoutes);

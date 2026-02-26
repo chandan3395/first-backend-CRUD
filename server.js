@@ -1,22 +1,25 @@
 require("dotenv").config();
-import cors from "cors";
 
+// imports must come before use and app initialization
 const express = require("express");
+const cors = require("cors");
 const mongoose = require("mongoose");
-const helmet = require("helmet") ;
-const rateLimit = require("express-rate-limit") ;
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
 
-const app = express();   // THIS LINE MUST EXIST
+const app = express();   // create app before applying middleware
 
-// JSON body --> req.body
-app.use(express.json());
+// CORS configuration
 app.use(
   cors({
     origin: "http://localhost:5173",
-    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
+// JSON body --> req.body
+app.use(express.json());
 
 // connects to MongoDB
 mongoose.connect(process.env.MONGO_URI)
@@ -26,31 +29,33 @@ mongoose.connect(process.env.MONGO_URI)
 const authRoutes = require("./routes/authRoutes");
 const notesRoutes = require("./routes/notesRoutes");
 
-// To check whether the API is running or not 
-app.get("/",(req,res)=>{
-    res.json({message: "API is running succesfully"}) ;
+// apply security middleware
+app.use(helmet());
+
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 min
+    max: 100, // max 100 requests per IP per window
+    message: {
+        success: false,
+        message: "too many requests. Try again later"
+    }
+});
+
+// limit auth routes
+app.use("/auth", limiter);
+
+// To check whether the API is running or not
+app.get("/", (req, res) => {
+    res.json({ message: "API is running succesfully" });
 });
 
 // route mounting
 // Any request starting with /auth will go to authRoutes file.
 app.use("/auth", authRoutes);
-app.use("/notes",notesRoutes) ;
+app.use("/notes", notesRoutes);
 
-const errorHandler = require("./middleware/errorMiddleware") ;
-app.use(errorHandler) ;
-
-app.use(helmet()) ;
-
-const limiter = rateLimit({
-    windowMs: 15*60*1000, // 15 min
-    max: 100, // max 100 requests per IP per window
-    message: {
-        success: false,
-        message: "too many requests. Try again later" 
-    }
-});
-
-app.use("/api/auth",limiter) ;
+const errorHandler = require("./middleware/errorMiddleware");
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000 ;
 

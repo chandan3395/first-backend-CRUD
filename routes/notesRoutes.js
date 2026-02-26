@@ -12,10 +12,10 @@ const router = express.Router();
 router.post("/",protect,validateCreateNote,createNote) ;
 router.get("/",protect,checkOwnership,getNotes) ;
 router.get("/:id",protect,checkOwnership,getNoteById) ;
-router.put("/:id",protect,updateNote)
-router.delete("/:id".protect,checkOwnership,deleteNote) ;
+router.put("/:id", protect, updateNote);
+router.delete("/:id", protect, checkOwnership, deleteNote);
 
-router.get("/admin", protect, restrictTo("admin"),)
-router.get("/admin/stats",protect,restrictTo("admin"),getAdminStats) ;
+// admin stats endpoint
+router.get("/admin/stats", protect, restrictTo("admin"), getAdminStats);
 
 module.exports = router ;

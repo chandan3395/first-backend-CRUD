@@ -1,8 +1,9 @@
 // @desc create a note
 // @POST /notes
 // @access private
-const Note = require("../models/note") ;
-const asyncHandler = require("../middleware/asyncHandler") ;
+const Note = require("../models/note");
+const User = require("../models/User");
+const asyncHandler = require("../middleware/asyncHandler");
 
 exports.createNote = asyncHandler (async (req,res) => {
         const {title,content} = req.body ;
